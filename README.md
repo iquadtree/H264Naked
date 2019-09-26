@@ -14,3 +14,14 @@ While working on a video decoding project, I found that video decoders are very 
 
 For more options, see:
 [h264 frame viewer question on Stackoverflow](http://stackoverflow.com/questions/6014904/h264-frame-viewer)
+
+Building from sources:
+
+```sh
+$ pushd h264bitstream-0.1.9
+$ ./configure
+$ make
+$ popd
+$ qmake -qt=qt5
+$ make
+```

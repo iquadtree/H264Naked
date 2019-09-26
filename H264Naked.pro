@@ -28,7 +28,7 @@ macx: LIBS += -L/usr/local/lib \
               -lh264bitstream
 macx:ICON = H264Naked.icns
 
-unix:!macx: LIBS += -lh264bitstream
-unix:!macx: QMAKE_LFLAGS += '-Wl,-rpath=\'\$$ORIGIN\''
+unix:!macx: INCLUDEPATH += $$_PRO_FILE_PWD_/h264bitstream-0.1.9
+unix:!macx: LIBS += $$_PRO_FILE_PWD_/h264bitstream-0.1.9/.libs/libh264bitstream.a
 
 

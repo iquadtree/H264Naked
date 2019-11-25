@@ -90,20 +90,20 @@ void print_sps(QTextStream &ts, sps_t* sps)
     ts << "   max_dec_frame_buffering :" << sps->vui.max_dec_frame_buffering <<"\n";
 
     ts << "=== HRD ===\n";
-    ts << " cpb_cnt_minus1 :" << sps->hrd.cpb_cnt_minus1 <<"\n";
-    ts << " bit_rate_scale :" << sps->hrd.bit_rate_scale <<"\n";
-    ts << " cpb_size_scale :" << sps->hrd.cpb_size_scale <<"\n";
+    ts << " cpb_cnt_minus1 :" << sps->hrd_nal.cpb_cnt_minus1 <<"\n";
+    ts << " bit_rate_scale :" << sps->hrd_nal.bit_rate_scale <<"\n";
+    ts << " cpb_size_scale :" << sps->hrd_nal.cpb_size_scale <<"\n";
     int SchedSelIdx;
-    for( SchedSelIdx = 0; SchedSelIdx <= sps->hrd.cpb_cnt_minus1; SchedSelIdx++ )
+    for( SchedSelIdx = 0; SchedSelIdx <= sps->hrd_nal.cpb_cnt_minus1; SchedSelIdx++ )
     {
-        ts << "   bit_rate_value_minus1[" << SchedSelIdx <<"] :"<< sps->hrd.bit_rate_value_minus1[SchedSelIdx] <<"\n"; // up to cpb_cnt_minus1, which is <= 31
-        ts << "   cpb_size_value_minus1[" << SchedSelIdx << "] :"<< sps->hrd.cpb_size_value_minus1[SchedSelIdx] <<"\n";
-        ts << "   cbr_flag[" << SchedSelIdx <<"] :" << sps->hrd.cbr_flag[SchedSelIdx] <<"\n";
+        ts << "   bit_rate_value_minus1[" << SchedSelIdx <<"] :"<< sps->hrd_nal.bit_rate_value_minus1[SchedSelIdx] <<"\n"; // up to cpb_cnt_minus1, which is <= 31
+        ts << "   cpb_size_value_minus1[" << SchedSelIdx << "] :"<< sps->hrd_nal.cpb_size_value_minus1[SchedSelIdx] <<"\n";
+        ts << "   cbr_flag[" << SchedSelIdx <<"] :" << sps->hrd_nal.cbr_flag[SchedSelIdx] <<"\n";
     }
-    ts << " initial_cpb_removal_delay_length_minus1 :" << sps->hrd.initial_cpb_removal_delay_length_minus1 <<"\n";
-    ts << " cpb_removal_delay_length_minus1 :" << sps->hrd.cpb_removal_delay_length_minus1 <<"\n";
-    ts << " dpb_output_delay_length_minus1 :" << sps->hrd.dpb_output_delay_length_minus1 <<"\n";
-    ts << " time_offset_length :" << sps->hrd.time_offset_length <<"\n";
+    ts << " initial_cpb_removal_delay_length_minus1 :" << sps->hrd_nal.initial_cpb_removal_delay_length_minus1 <<"\n";
+    ts << " cpb_removal_delay_length_minus1 :" << sps->hrd_nal.cpb_removal_delay_length_minus1 <<"\n";
+    ts << " dpb_output_delay_length_minus1 :" << sps->hrd_nal.dpb_output_delay_length_minus1 <<"\n";
+    ts << " time_offset_length :" << sps->hrd_nal.time_offset_length <<"\n";
 }
 
 
@@ -282,7 +282,7 @@ void print_seis(QTextStream &ts, h264_stream_t* h)
         ts << " payloadSize :" << s->payloadSize <<"\n";
 
         ts << " payload : \n";
-        print_bytes(ts, s->payload, s->payloadSize);
+        print_bytes(ts, s->data, s->payloadSize);
     }
 }
 

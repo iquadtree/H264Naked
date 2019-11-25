@@ -11,8 +11,8 @@ CppApplication {
 
     cpp.cxxLanguageVersion: "c++14"
 
-    cpp.includePaths: [project.sourceDirectory + "/h264bitstream-0.1.9"]
-    cpp.libraryPaths: [project.sourceDirectory + "/h264bitstream-0.1.9/.libs"]
+    cpp.includePaths: [project.sourceDirectory + "/deps/h264bitstream"]
+    cpp.libraryPaths: [project.sourceDirectory + "/deps/h264bitstream/.libs"]
     cpp.staticLibraries: ["h264bitstream"]
 
     Depends {

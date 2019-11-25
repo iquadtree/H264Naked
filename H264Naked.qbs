@@ -32,8 +32,8 @@ CppApplication {
     Group {
         name: "Include Files"
         files: [
-            "H264NALListModel.h",
-            "MainWindow.h"
+            "H264NALListModel.hpp",
+            "MainWindow.hpp",
         ]
     }
 

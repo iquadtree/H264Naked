@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 #include <QShortcut>
-#include "H264NALListModel.h"
+#include "H264NALListModel.hpp"
 
 namespace Ui {
 class MainWindow;

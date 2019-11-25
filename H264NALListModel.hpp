@@ -7,17 +7,24 @@
 #include <QVector>
 #include <QPair>
 
+
 class H264NALListModel : public QAbstractTableModel
 {
     Q_OBJECT
 
+    struct H264Deleter
+    {
+        static void cleanup(h264_stream_t *p) { h264_free(p); }
+    };
+
     QString m_filename;
     QByteArray m_fileBuffer;
-    QVector<QPair<h264_stream_t*, int> > m_nalList;
+    QVector<QPair<uint8_t *, int> > m_nalList;
+
+    mutable QScopedPointer<h264_stream_t, H264Deleter> m_bitstream;
 
 public:
     H264NALListModel(const QString &filename, QObject *parent = NULL);
-    ~H264NALListModel();
 
     int rowCount(const QModelIndex &parent) const;
     int columnCount(const QModelIndex &parent) const;

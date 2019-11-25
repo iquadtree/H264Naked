@@ -58,7 +58,7 @@ void MainWindow::onOpenFile()
 
 void MainWindow::onNalTableItemSelected(const QItemSelection &selected, const QItemSelection &deselected)
  {
-    auto index = selected.indexes().constFirst();
+    auto index = selected.indexes().first();
 
     Q_UNUSED(deselected);
 

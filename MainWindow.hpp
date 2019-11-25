@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QShortcut>
+#include <QItemSelection>
 #include "H264NALListModel.hpp"
 
 namespace Ui {
@@ -24,7 +25,7 @@ private:
 
 private slots:
     void onOpenFile();
-    void onNalTableItemClicked(QModelIndex);
+    void onNalTableItemSelected(const QItemSelection &, const QItemSelection &);
 };
 
 #endif // MAINWINDOW_H

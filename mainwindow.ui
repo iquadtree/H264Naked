@@ -72,6 +72,9 @@
           <enum>Qt::Horizontal</enum>
          </property>
          <widget class="QTableView" name="nalTableView">
+          <property name="selectionMode">
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
           <property name="selectionBehavior">
            <enum>QAbstractItemView::SelectRows</enum>
           </property>

@@ -1,4 +1,4 @@
-#include "MainWindow.h"
+#include "MainWindow.hpp"
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QFileInfo>
@@ -13,7 +13,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     connect(ui->openPushButton, SIGNAL(clicked()), this, SLOT(onOpenFile()));
-    connect(ui->nalTableView, SIGNAL(clicked(QModelIndex)), this, SLOT(onNalTableItemClicked(QModelIndex)));
 }
 
 MainWindow::~MainWindow()
@@ -25,6 +24,8 @@ void MainWindow::onOpenFile()
 {
     QString filename = QFileDialog::getOpenFileName(this,
         tr("Open H264 file"), ".", tr("H264 Files (*.h264 *.264)"));
+
+    if (filename.isEmpty()) return;
 
     QFileInfo fileInfo(filename);
 
@@ -47,12 +48,20 @@ void MainWindow::onOpenFile()
 */
     if (oldModel)
     {
+        ui->nalTableView->selectionModel()->disconnect();
         delete oldModel;
     }
+
+    connect(ui->nalTableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+            this, SLOT(onNalTableItemSelected(const QItemSelection &, const QItemSelection &)));
 }
 
-void MainWindow::onNalTableItemClicked(QModelIndex index)
-{
+void MainWindow::onNalTableItemSelected(const QItemSelection &selected, const QItemSelection &deselected)
+ {
+    auto index = selected.indexes().constFirst();
+
+    Q_UNUSED(deselected);
+
     if (m_currentH264Model)
     {
         ui->nalPlainTextEdit->setPlainText(m_currentH264Model->data(index, Qt::UserRole).toString());

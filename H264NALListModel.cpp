@@ -1,4 +1,4 @@
-#include "H264NALListModel.h"
+#include "H264NALListModel.hpp"
 #include <QFile>
 #include <QColor>
 #include <QDebug>
@@ -90,20 +90,20 @@ void print_sps(QTextStream &ts, sps_t* sps)
     ts << "   max_dec_frame_buffering :" << sps->vui.max_dec_frame_buffering <<"\n";
 
     ts << "=== HRD ===\n";
-    ts << " cpb_cnt_minus1 :" << sps->hrd.cpb_cnt_minus1 <<"\n";
-    ts << " bit_rate_scale :" << sps->hrd.bit_rate_scale <<"\n";
-    ts << " cpb_size_scale :" << sps->hrd.cpb_size_scale <<"\n";
+    ts << " cpb_cnt_minus1 :" << sps->hrd_nal.cpb_cnt_minus1 <<"\n";
+    ts << " bit_rate_scale :" << sps->hrd_nal.bit_rate_scale <<"\n";
+    ts << " cpb_size_scale :" << sps->hrd_nal.cpb_size_scale <<"\n";
     int SchedSelIdx;
-    for( SchedSelIdx = 0; SchedSelIdx <= sps->hrd.cpb_cnt_minus1; SchedSelIdx++ )
+    for( SchedSelIdx = 0; SchedSelIdx <= sps->hrd_nal.cpb_cnt_minus1; SchedSelIdx++ )
     {
-        ts << "   bit_rate_value_minus1[" << SchedSelIdx <<"] :"<< sps->hrd.bit_rate_value_minus1[SchedSelIdx] <<"\n"; // up to cpb_cnt_minus1, which is <= 31
-        ts << "   cpb_size_value_minus1[" << SchedSelIdx << "] :"<< sps->hrd.cpb_size_value_minus1[SchedSelIdx] <<"\n";
-        ts << "   cbr_flag[" << SchedSelIdx <<"] :" << sps->hrd.cbr_flag[SchedSelIdx] <<"\n";
+        ts << "   bit_rate_value_minus1[" << SchedSelIdx <<"] :"<< sps->hrd_nal.bit_rate_value_minus1[SchedSelIdx] <<"\n"; // up to cpb_cnt_minus1, which is <= 31
+        ts << "   cpb_size_value_minus1[" << SchedSelIdx << "] :"<< sps->hrd_nal.cpb_size_value_minus1[SchedSelIdx] <<"\n";
+        ts << "   cbr_flag[" << SchedSelIdx <<"] :" << sps->hrd_nal.cbr_flag[SchedSelIdx] <<"\n";
     }
-    ts << " initial_cpb_removal_delay_length_minus1 :" << sps->hrd.initial_cpb_removal_delay_length_minus1 <<"\n";
-    ts << " cpb_removal_delay_length_minus1 :" << sps->hrd.cpb_removal_delay_length_minus1 <<"\n";
-    ts << " dpb_output_delay_length_minus1 :" << sps->hrd.dpb_output_delay_length_minus1 <<"\n";
-    ts << " time_offset_length :" << sps->hrd.time_offset_length <<"\n";
+    ts << " initial_cpb_removal_delay_length_minus1 :" << sps->hrd_nal.initial_cpb_removal_delay_length_minus1 <<"\n";
+    ts << " cpb_removal_delay_length_minus1 :" << sps->hrd_nal.cpb_removal_delay_length_minus1 <<"\n";
+    ts << " dpb_output_delay_length_minus1 :" << sps->hrd_nal.dpb_output_delay_length_minus1 <<"\n";
+    ts << " time_offset_length :" << sps->hrd_nal.time_offset_length <<"\n";
 }
 
 
@@ -282,7 +282,7 @@ void print_seis(QTextStream &ts, h264_stream_t* h)
         ts << " payloadSize :" << s->payloadSize <<"\n";
 
         ts << " payload : \n";
-        print_bytes(ts, s->payload, s->payloadSize);
+        print_bytes(ts, s->data, s->payloadSize);
     }
 }
 
@@ -346,7 +346,8 @@ H264NALListModel::H264NALListModel(const QString &filename, QObject *parent)
     :QAbstractTableModel(parent),
       m_filename(filename),
       m_fileBuffer(),
-      m_nalList()
+      m_nalList(),
+      m_bitstream(h264_new())
 {
     load();
     parse();
@@ -367,16 +368,14 @@ void H264NALListModel::parse()
     int offset = 0;
     while(offset < m_fileBuffer.size())
     {
+        uint8_t *p = (uint8_t*)(m_fileBuffer.data() + offset);
         int nal_start = 0;
         int nal_end = 0;
-        find_nal_unit((uint8_t*)(m_fileBuffer.data() + offset), m_fileBuffer.size(), &nal_start, &nal_end);
+
+        find_nal_unit(p, m_fileBuffer.size(), &nal_start, &nal_end);
 
         if (nal_end - nal_start > 0)
-        {
-            h264_stream_t *h = h264_new();
-            read_nal_unit(h, &(((uint8_t*)m_fileBuffer.data())[nal_start + offset]), nal_end - nal_start);
-            m_nalList.push_back(QPair<h264_stream_t*, int>(h, nal_end - nal_start));
-        }
+            m_nalList.push_back({p + nal_start, nal_end - nal_start});
 
         offset += nal_end;
     }
@@ -429,7 +428,10 @@ QVariant H264NALListModel::headerData(int section, Qt::Orientation orientation, 
 
 QVariant H264NALListModel::data(const QModelIndex &index, int role) const
 {
-    h264_stream_t *h = m_nalList[index.row()].first;
+    auto nal = m_nalList[index.row()];
+    auto h = m_bitstream.data();
+
+    read_nal_unit(h, nal.first, nal.second);
 
     if(role == Qt::UserRole)
     {
@@ -558,12 +560,3 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
     }
     return QVariant();
 }
-
-H264NALListModel::~H264NALListModel()
-{
-    foreach(auto h, m_nalList)
-    {
-        h264_free(h.first);
-    }
-}
-

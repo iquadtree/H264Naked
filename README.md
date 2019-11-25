@@ -1,10 +1,10 @@
 # H264Naked
 
-[![Build Status](https://travis-ci.org/shi-yan/H264Naked.svg?branch=master)](https://travis-ci.org/shi-yan/H264Naked)
+[![Build Status](https://travis-ci.org/iquadtree/H264Naked.svg?branch=master)](https://travis-ci.org/iquadtree/H264Naked)
 
 ![screenshot](H264Naked_screenshot.png)
 
-[H264Naked Binaries Download](https://github.com/shi-yan/H264Naked/releases "Download H264Naked binaries")
+[H264Naked Binaries Download](https://github.com/iquadtree/H264Naked/releases "Download H264Naked binaries")
 
 H264Naked is a raw data viewer for H264 video stream.
 
@@ -24,3 +24,6 @@ $ make
 $ popd
 $ qbs build
 ```
+
+Copyright (C) 2018 shi-yan
+Copyright (C) 2019 iquadtree

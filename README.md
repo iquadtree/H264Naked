@@ -15,10 +15,11 @@ While working on a video decoding project, I found that video decoders are very 
 For more options, see:
 [h264 frame viewer question on Stackoverflow](http://stackoverflow.com/questions/6014904/h264-frame-viewer)
 
-Building from sources:
+Building from sources (Qbs should be configured first, please take look at [the Qbs setup manual](https://doc.qt.io/qbs/setup.html)):
 
 ```sh
 $ pushd deps/h264bitstream
+$ autoreconf -i
 $ ./configure
 $ make
 $ popd

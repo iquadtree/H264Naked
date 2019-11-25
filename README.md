@@ -18,9 +18,9 @@ For more options, see:
 Building from sources:
 
 ```sh
-$ pushd h264bitstream-0.1.9
+$ pushd deps/h264bitstream
 $ ./configure
 $ make
 $ popd
-$ qbs
+$ qbs build
 ```

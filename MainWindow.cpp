@@ -17,6 +17,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(&fileChooser, SIGNAL(fileSelected(const QString&)), this, SLOT(openFile(const QString &)));
     connect(ui->openPushButton, SIGNAL(clicked()), &fileChooser, SLOT(open()));
+
+    if (QApplication::arguments().size() > 1)
+        openFile(QApplication::arguments().at(1));
 }
 
 MainWindow::~MainWindow()

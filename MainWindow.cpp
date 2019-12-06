@@ -7,12 +7,15 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    openShortcut(QKeySequence::Open, this, SLOT(openFile())),
-    m_currentH264Model(NULL)
+    m_currentH264Model(NULL),
+    fileChooser(this, tr("Open H264 file"), QString(), tr("H264 Files (*.h264 *.264)")),
+    openShortcut(QKeySequence::Open, &fileChooser, SLOT(open())),
+    ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    connect(ui->openPushButton, SIGNAL(clicked()), this, SLOT(openFile()));
+
+    connect(&fileChooser, SIGNAL(fileSelected(const QString&)), this, SLOT(openFile(const QString &)));
+    connect(ui->openPushButton, SIGNAL(clicked()), &fileChooser, SLOT(open()));
 }
 
 MainWindow::~MainWindow()
@@ -20,11 +23,8 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::openFile()
+void MainWindow::openFile(const QString& filename)
 {
-    QString filename = QFileDialog::getOpenFileName(this,
-        tr("Open H264 file"), ".", tr("H264 Files (*.h264 *.264)"));
-
     if (filename.isEmpty()) return;
 
     QFileInfo fileInfo(filename);

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QFileDialog>
 #include <QShortcut>
 #include <QItemSelection>
 #include "H264NALListModel.hpp"
@@ -19,12 +20,13 @@ public:
     ~MainWindow();
 
 private:
-    Ui::MainWindow *ui;
-    QShortcut openShortcut;
     H264NALListModel *m_currentH264Model;
+    QFileDialog fileChooser;
+    QShortcut openShortcut;
+    Ui::MainWindow *ui;
 
 private slots:
-    void openFile();
+    void openFile(const QString& filename);
     void onNalTableItemSelected(const QItemSelection &, const QItemSelection &);
 };
 

@@ -13,7 +13,7 @@ CppApplication {
 
     cpp.includePaths: [project.sourceDirectory + "/deps/h264bitstream"]
     cpp.libraryPaths: [project.sourceDirectory + "/deps/h264bitstream/.libs"]
-    cpp.staticLibraries: ["h264bitstream"]
+    cpp.staticLibraries: [":libh264bitstream.a"]
 
     Depends {
         condition: qbs.targetOS.contains("macosx")

@@ -24,7 +24,7 @@ private:
     H264NALListModel *m_currentH264Model;
 
 private slots:
-    void onOpenFile();
+    void openFile();
     void onNalTableItemSelected(const QItemSelection &, const QItemSelection &);
 };
 

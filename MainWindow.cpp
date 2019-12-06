@@ -1,5 +1,6 @@
 #include "MainWindow.hpp"
 #include "ui_mainwindow.h"
+#include <QMessageBox>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QDebug>
@@ -7,12 +8,18 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow),
-    openShortcut(QKeySequence::Open, this, SLOT(onOpenFile())),
-    m_currentH264Model(NULL)
+    m_currentH264Model(NULL),
+    fileChooser(this, tr("Open H264 file"), QString(), tr("H264 Files (*.h264 *.264)")),
+    openShortcut(QKeySequence::Open, &fileChooser, SLOT(open())),
+    ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    connect(ui->openPushButton, SIGNAL(clicked()), this, SLOT(onOpenFile()));
+
+    connect(&fileChooser, SIGNAL(fileSelected(const QString&)), this, SLOT(openFile(const QString &)));
+    connect(ui->openPushButton, SIGNAL(clicked()), &fileChooser, SLOT(open()));
+
+    if (QApplication::arguments().size() > 1)
+        openFile(QApplication::arguments().at(1));
 }
 
 MainWindow::~MainWindow()
@@ -20,14 +27,17 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::onOpenFile()
+void MainWindow::openFile(const QString& filename)
 {
-    QString filename = QFileDialog::getOpenFileName(this,
-        tr("Open H264 file"), ".", tr("H264 Files (*.h264 *.264)"));
-
     if (filename.isEmpty()) return;
 
     QFileInfo fileInfo(filename);
+
+    if (!fileInfo.isReadable())
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Can't open file %1.").arg(filename));
+        return;
+    }
 
     ui->filePathLineEdit->setText(fileInfo.absoluteFilePath());
 

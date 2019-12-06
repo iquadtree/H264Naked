@@ -18,7 +18,7 @@ Building from sources (Qbs should be configured first, please take look at [the 
 ```sh
 $ pushd deps/h264bitstream
 $ autoreconf -i
-$ ./configure
+$ env CFLAGS="-DHAVE_CABAC=1 -DHAVE_SEI=1" ./configure
 $ make
 $ popd
 $ qbs build

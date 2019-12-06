@@ -6,7 +6,7 @@ before_install:
 script:
   - pushd deps/h264bitstream
   - autoreconf -i
-  - ./configure
+  - env CFLAGS="-DHAVE_CABAC=1 -DHAVE_SEI=1" ./configure
   - make
   - popd
   - qbs --version

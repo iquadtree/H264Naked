@@ -1,5 +1,6 @@
 #include "MainWindow.hpp"
 #include "ui_mainwindow.h"
+#include <QMessageBox>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QDebug>
@@ -28,6 +29,12 @@ void MainWindow::openFile(const QString& filename)
     if (filename.isEmpty()) return;
 
     QFileInfo fileInfo(filename);
+
+    if (!fileInfo.isReadable())
+    {
+        QMessageBox::critical(this, tr("Error"), tr("Can't open file %1.").arg(filename));
+        return;
+    }
 
     ui->filePathLineEdit->setText(fileInfo.absoluteFilePath());
 

@@ -343,7 +343,7 @@ H264NALListModel::H264NALListModel(const QString &filename, QObject *parent)
     :QAbstractTableModel(parent),
       m_filename(filename),
       m_fileBuffer(),
-      m_nalList(),
+      m_nalListIndex(),
       m_bitstream(h264_new())
 {
     load();
@@ -365,14 +365,19 @@ void H264NALListModel::parse()
     int offset = 0;
     while(offset < m_fileBuffer.size())
     {
-        uint8_t *p = (uint8_t*)(m_fileBuffer.data() + offset);
+        uint8_t *p = reinterpret_cast<uint8_t *>(m_fileBuffer.data() + offset);
+
         int nal_start = 0;
         int nal_end = 0;
 
+        h264_stream_t *h = m_bitstream.data();
+
         find_nal_unit(p, m_fileBuffer.size(), &nal_start, &nal_end);
 
-        if (nal_end - nal_start > 0)
-            m_nalList.push_back({p + nal_start, nal_end - nal_start});
+        if (nal_end - nal_start > 0) {
+            read_nal_unit(h, p + nal_start, nal_end - nal_start);
+            m_nalListIndex.push_back({h->nal->nal_unit_type, h->nal->nal_ref_idc, p + nal_start, nal_end - nal_start, h->nal->sizeof_parsed});
+        }
 
         offset += nal_end;
     }
@@ -381,7 +386,7 @@ void H264NALListModel::parse()
 int H264NALListModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return m_nalList.size();
+    return m_nalListIndex.size();
 }
 
 int H264NALListModel::columnCount(const QModelIndex &parent) const
@@ -425,16 +430,15 @@ QVariant H264NALListModel::headerData(int section, Qt::Orientation orientation, 
 
 QVariant H264NALListModel::data(const QModelIndex &index, int role) const
 {
-    auto nal = m_nalList[index.row()];
+    auto nal = m_nalListIndex[index.row()];
     auto h = m_bitstream.data();
-
-    read_nal_unit(h, nal.first, nal.second);
 
     if(role == Qt::UserRole)
     {
-
         QString result;
         QTextStream ts(&result);
+
+        read_nal_unit(h, nal.data, nal.size);
 
         print_nal(ts, h, h->nal);
 
@@ -447,7 +451,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
         case Qt::DisplayRole:
         {
-            switch(h->nal->nal_unit_type)
+            switch(nal.type)
             {
             case NAL_UNIT_TYPE_UNSPECIFIED:
                 return QString("Unspecified");
@@ -485,7 +489,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         }
         case Qt::DecorationRole:
         {
-            switch(h->nal->nal_unit_type)
+            switch(nal.type)
             {
             case NAL_UNIT_TYPE_UNSPECIFIED:
                 return QColor(163, 30, 57);
@@ -532,7 +536,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
         case Qt::DisplayRole:
         {
-            return h->nal->nal_ref_idc;
+            return nal.ref_idc;
         }
         }
     }
@@ -541,7 +545,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
             case Qt::DisplayRole:
             {
-                return m_nalList[index.row()].second;
+                return nal.size;
             }
         }
     }
@@ -551,7 +555,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
         case Qt::DisplayRole:
         {
-            return h->nal->sizeof_parsed;
+            return nal.parsed_size;
         }
         }
     }

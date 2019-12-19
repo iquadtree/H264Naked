@@ -17,9 +17,18 @@ class H264NALListModel : public QAbstractTableModel
         static void cleanup(h264_stream_t *p) { h264_free(p); }
     };
 
+    struct H264NALIndexEntry
+    {
+        int type;
+        int ref_idc;
+        uint8_t *data;
+        int size;
+        int parsed_size;
+    };
+
     QString m_filename;
     QByteArray m_fileBuffer;
-    QVector<QPair<uint8_t *, int> > m_nalList;
+    QVector<H264NALIndexEntry> m_nalListIndex;
 
     mutable QScopedPointer<h264_stream_t, H264Deleter> m_bitstream;
 

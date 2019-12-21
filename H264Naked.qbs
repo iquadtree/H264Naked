@@ -9,11 +9,14 @@ CppApplication {
         submodules: ["core", "gui", "widgets"]
     }
 
+    property int cacheSize: 20480
+
     cpp.cxxLanguageVersion: "c++14"
 
     cpp.includePaths: [project.sourceDirectory + "/deps/h264bitstream"]
     cpp.libraryPaths: [project.sourceDirectory + "/deps/h264bitstream/.libs"]
     cpp.staticLibraries: [":libh264bitstream.a"]
+    cpp.defines: ["CACHE_SIZE=" + cacheSize]
 
     Depends {
         condition: qbs.targetOS.contains("macosx")

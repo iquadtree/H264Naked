@@ -4,12 +4,20 @@
 #include <QDebug>
 #include <QTextStream>
 
-void print_bytes(QTextStream &ts, const uint8_t* buf, int len);
-void print_slice_header(QTextStream &ts, const slice_header_t* sh);
-
 /***************************** debug ******************************/
 
-void print_sps(QTextStream &ts, const sps_t* sps)
+static void print_bytes(QTextStream &ts, const uint8_t* buf, int len)
+{
+    int i;
+    for (i = 0; i < len; i++)
+    {
+        ts << QString("%1 ").arg(buf[i] , 0, 16, QLatin1Char('0'));
+        if ((i+1) % 16 == 0) { ts<< "\n"; }
+    }
+    ts << "\n";
+}
+
+static void print_sps(QTextStream &ts, const sps_t* sps)
 {
     ts << "======= SPS =======\n";
     ts << " profile_idc :" << sps->profile_idc <<"\n";
@@ -107,7 +115,7 @@ void print_sps(QTextStream &ts, const sps_t* sps)
 }
 
 
-void print_pps(QTextStream &ts, const pps_t* pps)
+static void print_pps(QTextStream &ts, const pps_t* pps)
 {
     ts << "======= PPS =======\n";
     ts << " pic_parameter_set_id :" << pps->pic_parameter_set_id <<"\n";
@@ -143,7 +151,7 @@ void print_pps(QTextStream &ts, const pps_t* pps)
     ts << " second_chroma_qp_index_offset :" << pps->second_chroma_qp_index_offset <<"\n";
 }
 
-void print_slice_header(QTextStream &ts, slice_header_t* sh)
+static void print_slice_header(QTextStream &ts, slice_header_t* sh)
 {
     ts << "======= Slice Header =======\n";
     ts << " first_mb_in_slice :" << sh->first_mb_in_slice <<"\n";
@@ -221,7 +229,7 @@ void print_slice_header(QTextStream &ts, slice_header_t* sh)
 
 }
 
-void print_aud(QTextStream &ts, const aud_t* aud)
+static void print_aud(QTextStream &ts, const aud_t* aud)
 {
     ts << "======= Access Unit Delimiter =======\n";
     const char* primary_pic_type_name;
@@ -240,7 +248,7 @@ void print_aud(QTextStream &ts, const aud_t* aud)
     ts << " primary_pic_type :" << aud->primary_pic_type << primary_pic_type_name <<"\n";
 }
 
-void print_seis(QTextStream &ts, const h264_stream_t* h)
+static void print_seis(QTextStream &ts, const h264_stream_t* h)
 {
     sei_t** seis = h->seis;
     int num_seis = h->num_seis;
@@ -292,7 +300,7 @@ void print_seis(QTextStream &ts, const h264_stream_t* h)
  @param[in]      h          the stream object
  @param[in]      nal        the nal unit
  */
-void print_nal(QTextStream &ts, const h264_stream_t* h, const nal_t* nal)
+static void print_nal(QTextStream &ts, const h264_stream_t* h, const nal_t* nal)
 {
     ts << "==================== NAL ====================\n";
     ts << " forbidden_zero_bit :" << nal->forbidden_zero_bit << "\n";
@@ -329,17 +337,6 @@ void print_nal(QTextStream &ts, const h264_stream_t* h, const nal_t* nal)
     else if( nal->nal_unit_type == NAL_UNIT_TYPE_PPS) { print_pps(ts, h->pps); }
     else if( nal->nal_unit_type == NAL_UNIT_TYPE_AUD) { print_aud(ts, h->aud); }
     else if( nal->nal_unit_type == NAL_UNIT_TYPE_SEI) { print_seis(ts, h ); }
-}
-
-void print_bytes(QTextStream &ts, const uint8_t* buf, int len)
-{
-    int i;
-    for (i = 0; i < len; i++)
-    {
-        ts << QString("%1 ").arg(buf[i] , 0, 16, QLatin1Char('0'));
-        if ((i+1) % 16 == 0) { ts<< "\n"; }
-    }
-    ts << "\n";
 }
 
 H264NALListModel::H264NALListModel(const QString &filename, QObject *parent)

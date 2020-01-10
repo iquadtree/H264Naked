@@ -23,3 +23,5 @@ $ make
 $ popd
 $ qbs build
 ```
+
+Copyright (C) 2020 shi-yan, jiegec, iquadtree, hannesweisbach and fellow contributors.

@@ -1,6 +1,6 @@
 # H264Naked
 
-[![Build Status](https://travis-ci.org/iquadtree/H264Naked.svg?branch=master)](https://travis-ci.org/iquadtree/H264Naked)
+[![Build Status](https://travis-ci.com/iquadtree/H264Naked.svg?branch=master)](https://travis-ci.com/iquadtree/H264Naked)
 
 ![screenshot](H264Naked_screenshot.png)
 

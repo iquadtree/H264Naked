@@ -24,4 +24,4 @@ $ popd
 $ qbs build
 ```
 
-Copyright (C) 2020 shi-yan, jiegec, iquadtree, hannesweisbach and fellow contributors.
+Copyright (C) 2021 shi-yan, jiegec, iquadtree, hannesweisbach and fellow contributors.

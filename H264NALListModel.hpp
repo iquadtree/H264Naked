@@ -35,7 +35,9 @@ class H264NALListModel : public QAbstractTableModel
     mutable QScopedPointer<h264_stream_t, H264Deleter> _parser;
 
 public:
-    H264NALListModel(const QString &filename, QObject *parent = nullptr);
+    H264NALListModel(QObject *parent = nullptr);
+
+    bool setFile(const QString &filename);
 
     int rowCount(const QModelIndex &parent) const;
     int columnCount(const QModelIndex &parent) const;

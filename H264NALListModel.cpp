@@ -339,19 +339,31 @@ static void print_nal(QTextStream &ts, const h264_stream_t* h, const nal_t* nal)
     else if( nal->nal_unit_type == NAL_UNIT_TYPE_SEI) { print_seis(ts, h ); }
 }
 
-H264NALListModel::H264NALListModel(const QString &filename, QObject *parent)
-    :QAbstractTableModel(parent),
-      _bitstream(filename),
+H264NALListModel::H264NALListModel(QObject *parent)
+    : QAbstractTableModel(parent),
       _parser(h264_new())
 {
     parseBitstream();
+}
+
+bool H264NALListModel::setFile(const QString &filename)
+{
+    _bitstream.setFileName(filename);
+    _bitstream.open(QFile::ReadOnly);
+
+    if (!_bitstream.isOpen()) {
+        return false;
+    }
+
+    parseBitstream();
+
+    return true;
 }
 
 void H264NALListModel::parseBitstream()
 {
     ptrdiff_t tail = 0, head = CACHE_SIZE;
 
-    _bitstream.open(QFile::ReadOnly);
     _readBuffer.resize(static_cast<size_t>(head - tail));
 
     while (!_bitstream.atEnd())

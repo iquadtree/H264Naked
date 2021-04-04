@@ -24,4 +24,11 @@ $ popd
 $ qbs build
 ```
 
+If you want to change default reader cache size (to 1024 for example) execute the following:
+
+```sh
+$ qbs resolve products.H264Naked.cacheSize:1024
+$ qbs build
+```
+
 Copyright (C) 2021 shi-yan, jiegec, iquadtree, hannesweisbach and fellow contributors.

@@ -2,21 +2,27 @@
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QProgressBar>
 #include <QFileInfo>
 #include <QDebug>
 #include <QKeySequence>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    m_currentH264Model(NULL),
-    fileChooser(this, tr("Open H264 file"), QString(), tr("H264 Files (*.h264 *.264)")),
-    openShortcut(QKeySequence::Open, &fileChooser, SLOT(open())),
-    ui(new Ui::MainWindow)
+    _fileChooser(this, tr("Open H264 file"), QString(), tr("H264 Files (*.h264 *.264)")),
+    _openShortcut(QKeySequence::Open, &_fileChooser, SLOT(open())),
+    _ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+    _ui->setupUi(this);
 
-    connect(&fileChooser, SIGNAL(fileSelected(const QString&)), this, SLOT(openFile(const QString &)));
-    connect(ui->openPushButton, SIGNAL(clicked()), &fileChooser, SLOT(open()));
+    connect(&_streamModel, &H264NALListModel::parsingProgress, [this](qreal progress) {
+        auto val = static_cast<int>(progress * 100);
+        _ui->progressBar->setVisible(!(val == 100));
+        _ui->progressBar->setValue(val);
+    });
+
+    connect(&_fileChooser, SIGNAL(fileSelected(const QString&)), this, SLOT(openFile(const QString &)));
+    connect(_ui->openPushButton, SIGNAL(clicked()), &_fileChooser, SLOT(open()));
 
     if (QApplication::arguments().size() > 1)
         openFile(QApplication::arguments().at(1));
@@ -24,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    delete ui;
+    delete _ui;
 }
 
 void MainWindow::openFile(const QString& filename)
@@ -39,30 +45,13 @@ void MainWindow::openFile(const QString& filename)
         return;
     }
 
-    ui->filePathLineEdit->setText(fileInfo.absoluteFilePath());
+    _ui->progressBar->setTextVisible(true);
 
-    H264NALListModel *oldModel = NULL;
-    if (m_currentH264Model)
-    {
-        oldModel = m_currentH264Model;
-    }
+    _ui->filePathLineEdit->setText(fileInfo.absoluteFilePath());
+    _streamModel.setFile(filename);
+    _ui->nalTableView->setModel(&_streamModel);
 
-    m_currentH264Model = new H264NALListModel(filename, this);
-
-    ui->nalTableView->setModel(m_currentH264Model);
-/*
-    for (int c = 0; c < ui->nalTableView->horizontalHeader()->count(); ++c)
-    {
-        ui->nalTableView->horizontalHeader()->setSectionResizeMode(c, QHeaderView::Stretch);
-    }
-*/
-    if (oldModel)
-    {
-        ui->nalTableView->selectionModel()->disconnect();
-        delete oldModel;
-    }
-
-    connect(ui->nalTableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+    connect(_ui->nalTableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             this, SLOT(onNalTableItemSelected(const QItemSelection &, const QItemSelection &)));
 }
 
@@ -70,10 +59,7 @@ void MainWindow::onNalTableItemSelected(const QItemSelection &selected, const QI
  {
     auto index = selected.indexes().first();
 
-    Q_UNUSED(deselected);
+    Q_UNUSED(deselected)
 
-    if (m_currentH264Model)
-    {
-        ui->nalPlainTextEdit->setPlainText(m_currentH264Model->data(index, Qt::UserRole).toString());
-    }
+    _ui->nalPlainTextEdit->setPlainText(_streamModel.data(index, Qt::UserRole).toString());
 }

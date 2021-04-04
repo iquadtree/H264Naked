@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QFileDialog>
 #include <QShortcut>
+#include <QProgressBar>
 #include <QItemSelection>
 #include "H264NALListModel.hpp"
 
@@ -20,10 +21,10 @@ public:
     ~MainWindow();
 
 private:
-    H264NALListModel *m_currentH264Model;
-    QFileDialog fileChooser;
-    QShortcut openShortcut;
-    Ui::MainWindow *ui;
+    H264NALListModel _streamModel;
+    QFileDialog _fileChooser;
+    QShortcut _openShortcut;
+    Ui::MainWindow *_ui;
 
 private slots:
     void openFile(const QString& filename);

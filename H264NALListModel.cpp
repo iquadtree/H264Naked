@@ -4,12 +4,20 @@
 #include <QDebug>
 #include <QTextStream>
 
-void print_bytes(QTextStream &ts, uint8_t* buf, int len);
-void print_slice_header(QTextStream &ts, slice_header_t* sh);
-
 /***************************** debug ******************************/
 
-void print_sps(QTextStream &ts, sps_t* sps)
+static void print_bytes(QTextStream &ts, const uint8_t* buf, int len)
+{
+    int i;
+    for (i = 0; i < len; i++)
+    {
+        ts << QString("%1 ").arg(buf[i] , 0, 16, QLatin1Char('0'));
+        if ((i+1) % 16 == 0) { ts<< "\n"; }
+    }
+    ts << "\n";
+}
+
+static void print_sps(QTextStream &ts, const sps_t* sps)
 {
     ts << "======= SPS =======\n";
     ts << " profile_idc :" << sps->profile_idc <<"\n";
@@ -107,7 +115,7 @@ void print_sps(QTextStream &ts, sps_t* sps)
 }
 
 
-void print_pps(QTextStream &ts, pps_t* pps)
+static void print_pps(QTextStream &ts, const pps_t* pps)
 {
     ts << "======= PPS =======\n";
     ts << " pic_parameter_set_id :" << pps->pic_parameter_set_id <<"\n";
@@ -143,7 +151,7 @@ void print_pps(QTextStream &ts, pps_t* pps)
     ts << " second_chroma_qp_index_offset :" << pps->second_chroma_qp_index_offset <<"\n";
 }
 
-void print_slice_header(QTextStream &ts, slice_header_t* sh)
+static void print_slice_header(QTextStream &ts, slice_header_t* sh)
 {
     ts << "======= Slice Header =======\n";
     ts << " first_mb_in_slice :" << sh->first_mb_in_slice <<"\n";
@@ -221,7 +229,7 @@ void print_slice_header(QTextStream &ts, slice_header_t* sh)
 
 }
 
-void print_aud(QTextStream &ts, aud_t* aud)
+static void print_aud(QTextStream &ts, const aud_t* aud)
 {
     ts << "======= Access Unit Delimiter =======\n";
     const char* primary_pic_type_name;
@@ -240,7 +248,7 @@ void print_aud(QTextStream &ts, aud_t* aud)
     ts << " primary_pic_type :" << aud->primary_pic_type << primary_pic_type_name <<"\n";
 }
 
-void print_seis(QTextStream &ts, h264_stream_t* h)
+static void print_seis(QTextStream &ts, const h264_stream_t* h)
 {
     sei_t** seis = h->seis;
     int num_seis = h->num_seis;
@@ -292,7 +300,7 @@ void print_seis(QTextStream &ts, h264_stream_t* h)
  @param[in]      h          the stream object
  @param[in]      nal        the nal unit
  */
-void print_nal(QTextStream &ts, h264_stream_t* h, nal_t* nal)
+static void print_nal(QTextStream &ts, const h264_stream_t* h, const nal_t* nal)
 {
     ts << "==================== NAL ====================\n";
     ts << " forbidden_zero_bit :" << nal->forbidden_zero_bit << "\n";
@@ -301,27 +309,27 @@ void print_nal(QTextStream &ts, h264_stream_t* h, nal_t* nal)
     const char* nal_unit_type_name;
     switch (nal->nal_unit_type)
     {
-    case  NAL_UNIT_TYPE_UNSPECIFIED :                   nal_unit_type_name = "Unspecified"; break;
-    case  NAL_UNIT_TYPE_CODED_SLICE_NON_IDR :           nal_unit_type_name = "Coded slice of a non-IDR picture"; break;
-    case  NAL_UNIT_TYPE_CODED_SLICE_DATA_PARTITION_A :  nal_unit_type_name = "Coded slice data partition A"; break;
-    case  NAL_UNIT_TYPE_CODED_SLICE_DATA_PARTITION_B :  nal_unit_type_name = "Coded slice data partition B"; break;
-    case  NAL_UNIT_TYPE_CODED_SLICE_DATA_PARTITION_C :  nal_unit_type_name = "Coded slice data partition C"; break;
-    case  NAL_UNIT_TYPE_CODED_SLICE_IDR :               nal_unit_type_name = "Coded slice of an IDR picture"; break;
-    case  NAL_UNIT_TYPE_SEI :                           nal_unit_type_name = "Supplemental enhancement information (SEI)"; break;
-    case  NAL_UNIT_TYPE_SPS :                           nal_unit_type_name = "Sequence parameter set"; break;
-    case  NAL_UNIT_TYPE_PPS :                           nal_unit_type_name = "Picture parameter set"; break;
-    case  NAL_UNIT_TYPE_AUD :                           nal_unit_type_name = "Access unit delimiter"; break;
-    case  NAL_UNIT_TYPE_END_OF_SEQUENCE :               nal_unit_type_name = "End of sequence"; break;
-    case  NAL_UNIT_TYPE_END_OF_STREAM :                 nal_unit_type_name = "End of stream"; break;
-    case  NAL_UNIT_TYPE_FILLER :                        nal_unit_type_name = "Filler data"; break;
-    case  NAL_UNIT_TYPE_SPS_EXT :                       nal_unit_type_name = "Sequence parameter set extension"; break;
+    case  NAL_UNIT_TYPE_UNSPECIFIED :                   nal_unit_type_name = "unspecified"; break;
+    case  NAL_UNIT_TYPE_CODED_SLICE_NON_IDR :           nal_unit_type_name = "coded slice of a non-IDR picture"; break;
+    case  NAL_UNIT_TYPE_CODED_SLICE_DATA_PARTITION_A :  nal_unit_type_name = "coded slice data partition A"; break;
+    case  NAL_UNIT_TYPE_CODED_SLICE_DATA_PARTITION_B :  nal_unit_type_name = "coded slice data partition B"; break;
+    case  NAL_UNIT_TYPE_CODED_SLICE_DATA_PARTITION_C :  nal_unit_type_name = "coded slice data partition C"; break;
+    case  NAL_UNIT_TYPE_CODED_SLICE_IDR :               nal_unit_type_name = "coded slice of an IDR picture"; break;
+    case  NAL_UNIT_TYPE_SEI :                           nal_unit_type_name = "supplemental enhancement information (SEI)"; break;
+    case  NAL_UNIT_TYPE_SPS :                           nal_unit_type_name = "sequence parameter set"; break;
+    case  NAL_UNIT_TYPE_PPS :                           nal_unit_type_name = "picture parameter set"; break;
+    case  NAL_UNIT_TYPE_AUD :                           nal_unit_type_name = "access unit delimiter"; break;
+    case  NAL_UNIT_TYPE_END_OF_SEQUENCE :               nal_unit_type_name = "end of sequence"; break;
+    case  NAL_UNIT_TYPE_END_OF_STREAM :                 nal_unit_type_name = "end of stream"; break;
+    case  NAL_UNIT_TYPE_FILLER :                        nal_unit_type_name = "filler data"; break;
+    case  NAL_UNIT_TYPE_SPS_EXT :                       nal_unit_type_name = "sequence parameter set extension"; break;
         // 14..18    // Reserved
-    case  NAL_UNIT_TYPE_CODED_SLICE_AUX :               nal_unit_type_name = "Coded slice of an auxiliary coded picture without partitioning"; break;
+    case  NAL_UNIT_TYPE_CODED_SLICE_AUX :               nal_unit_type_name = "coded slice of an auxiliary coded picture without partitioning"; break;
         // 20..23    // Reserved
         // 24..31    // Unspecified
-    default :                                           nal_unit_type_name = "Unknown"; break;
+    default :                                           nal_unit_type_name = "unknown"; break;
     }
-    ts << " nal_unit_type : " << nal->nal_unit_type << " " << nal_unit_type_name <<"\n";
+    ts << " nal_unit_type : " << nal->nal_unit_type << " (" << nal_unit_type_name <<")\n";
 
     if( nal->nal_unit_type == NAL_UNIT_TYPE_CODED_SLICE_NON_IDR) { print_slice_header(ts, h->sh); }
     else if( nal->nal_unit_type == NAL_UNIT_TYPE_CODED_SLICE_IDR) { print_slice_header(ts, h->sh); }
@@ -331,60 +339,67 @@ void print_nal(QTextStream &ts, h264_stream_t* h, nal_t* nal)
     else if( nal->nal_unit_type == NAL_UNIT_TYPE_SEI) { print_seis(ts, h ); }
 }
 
-void print_bytes(QTextStream &ts, uint8_t* buf, int len)
+H264NALListModel::H264NALListModel(QObject *parent)
+    : QAbstractTableModel(parent),
+      _parser(h264_new())
 {
-    int i;
-    for (i = 0; i < len; i++)
-    {
-        ts << QString("%1 ").arg(buf[i] , 0, 16, QLatin1Char('0'));
-        if ((i+1) % 16 == 0) { ts<< "\n"; }
+    parseBitstream();
+}
+
+bool H264NALListModel::setFile(const QString &filename)
+{
+    _bitstream.setFileName(filename);
+    _bitstream.open(QFile::ReadOnly);
+
+    if (!_bitstream.isOpen()) {
+        return false;
     }
-    ts << "\n";
+
+    parseBitstream();
+
+    return true;
 }
 
-H264NALListModel::H264NALListModel(const QString &filename, QObject *parent)
-    :QAbstractTableModel(parent),
-      m_filename(filename),
-      m_fileBuffer(),
-      m_nalList(),
-      m_bitstream(h264_new())
+void H264NALListModel::parseBitstream()
 {
-    load();
-    parse();
-}
+    ptrdiff_t tail = 0, head = CACHE_SIZE;
 
-void H264NALListModel::load()
-{
-    QFile file(m_filename);
-    if (file.open(QFile::ReadOnly))
+    _readBuffer.resize(static_cast<size_t>(head - tail));
+
+    while (!_bitstream.atEnd())
     {
-        m_fileBuffer = file.readAll();
-        file.close();
-    }
-}
-
-void H264NALListModel::parse()
-{
-    int offset = 0;
-    while(offset < m_fileBuffer.size())
-    {
-        uint8_t *p = (uint8_t*)(m_fileBuffer.data() + offset);
         int nal_start = 0;
         int nal_end = 0;
 
-        find_nal_unit(p, m_fileBuffer.size(), &nal_start, &nal_end);
+        _bitstream.peek(static_cast<char *>(static_cast<void *>(_readBuffer.data())), head - tail);
 
-        if (nal_end - nal_start > 0)
-            m_nalList.push_back({p + nal_start, nal_end - nal_start});
+        if (-1 == find_nal_unit(_readBuffer.data(), static_cast<int>(head - tail), &nal_start, &nal_end))
+        {
+            head += CACHE_SIZE;
+            _readBuffer.resize(static_cast<size_t>(head - tail));
+            continue;
+        }
 
-        offset += nal_end;
+        if (nal_end - nal_start > 0) {
+            auto p = _parser.get();
+
+            read_nal_unit(p, _readBuffer.data() + nal_start, nal_end - nal_start);
+            _nalListIndex.push_back({p->nal->nal_unit_type, p->nal->nal_ref_idc, tail + nal_start, static_cast<size_t>(nal_end - nal_start), static_cast<size_t>(p->nal->sizeof_parsed)});
+
+            tail += nal_end;
+            head = tail + CACHE_SIZE;
+
+            _bitstream.seek(tail);
+        }
+
+        emit parsingProgress((tail * 1.0) / (_bitstream.size() * 1.0));
     }
 }
 
 int H264NALListModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return m_nalList.size();
+    return _nalListIndex.size();
 }
 
 int H264NALListModel::columnCount(const QModelIndex &parent) const
@@ -428,18 +443,23 @@ QVariant H264NALListModel::headerData(int section, Qt::Orientation orientation, 
 
 QVariant H264NALListModel::data(const QModelIndex &index, int role) const
 {
-    auto nal = m_nalList[index.row()];
-    auto h = m_bitstream.data();
-
-    read_nal_unit(h, nal.first, nal.second);
+    auto nal = _nalListIndex[index.row()];
+    auto parser = _parser.data();
 
     if(role == Qt::UserRole)
     {
-
         QString result;
         QTextStream ts(&result);
 
-        print_nal(ts, h, h->nal);
+        if (!_bitstream.seek(nal.offset))
+        {
+            return "N/A";
+        }
+
+        _bitstream.read(static_cast<char *>(static_cast<void *>(_readBuffer.data())), static_cast<int>(nal.size));
+        read_nal_unit(parser, _readBuffer.data(), static_cast<int>(nal.size));
+
+        print_nal(ts, parser, parser->nal);
 
         return result;
     }
@@ -450,7 +470,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
         case Qt::DisplayRole:
         {
-            switch(h->nal->nal_unit_type)
+            switch(nal.type)
             {
             case NAL_UNIT_TYPE_UNSPECIFIED:
                 return QString("Unspecified");
@@ -488,7 +508,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         }
         case Qt::DecorationRole:
         {
-            switch(h->nal->nal_unit_type)
+            switch(nal.type)
             {
             case NAL_UNIT_TYPE_UNSPECIFIED:
                 return QColor(163, 30, 57);
@@ -535,7 +555,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
         case Qt::DisplayRole:
         {
-            return h->nal->nal_ref_idc;
+            return QVariant::fromValue(nal.ref_idc);
         }
         }
     }
@@ -544,7 +564,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
             case Qt::DisplayRole:
             {
-                return m_nalList[index.row()].second;
+                return QVariant::fromValue(nal.size);
             }
         }
     }
@@ -554,7 +574,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
         case Qt::DisplayRole:
         {
-            return h->nal->sizeof_parsed;
+            return QVariant::fromValue(nal.parsed_size);
         }
         }
     }

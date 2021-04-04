@@ -391,6 +391,8 @@ void H264NALListModel::parseBitstream()
 
             _bitstream.seek(tail);
         }
+
+        emit parsingProgress((tail * 1.0) / (_bitstream.size() * 1.0));
     }
 }
 

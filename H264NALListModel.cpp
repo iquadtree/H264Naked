@@ -341,10 +341,10 @@ static void print_nal(QTextStream &ts, const h264_stream_t* h, const nal_t* nal)
 
 H264NALListModel::H264NALListModel(const QString &filename, QObject *parent)
     :QAbstractTableModel(parent),
-      m_filename(filename),
-      m_fileBuffer(),
-      m_nalListIndex(),
-      m_bitstream(h264_new())
+      _filename(filename),
+      _fileBuffer(),
+      _nalListIndex(),
+      _bitstream(h264_new())
 {
     load();
     parse();
@@ -352,10 +352,10 @@ H264NALListModel::H264NALListModel(const QString &filename, QObject *parent)
 
 void H264NALListModel::load()
 {
-    QFile file(m_filename);
+    QFile file(_filename);
     if (file.open(QFile::ReadOnly))
     {
-        m_fileBuffer = file.readAll();
+        _fileBuffer = file.readAll();
         file.close();
     }
 }
@@ -363,20 +363,20 @@ void H264NALListModel::load()
 void H264NALListModel::parse()
 {
     int offset = 0;
-    while(offset < m_fileBuffer.size())
+    while(offset < _fileBuffer.size())
     {
-        uint8_t *p = reinterpret_cast<uint8_t *>(m_fileBuffer.data() + offset);
+        uint8_t *p = reinterpret_cast<uint8_t *>(_fileBuffer.data() + offset);
 
         int nal_start = 0;
         int nal_end = 0;
 
-        h264_stream_t *h = m_bitstream.data();
+        h264_stream_t *h = _bitstream.data();
 
-        find_nal_unit(p, m_fileBuffer.size(), &nal_start, &nal_end);
+        find_nal_unit(p, _fileBuffer.size(), &nal_start, &nal_end);
 
         if (nal_end - nal_start > 0) {
             read_nal_unit(h, p + nal_start, nal_end - nal_start);
-            m_nalListIndex.push_back({h->nal->nal_unit_type, h->nal->nal_ref_idc, p + nal_start, nal_end - nal_start, h->nal->sizeof_parsed});
+            _nalListIndex.push_back({h->nal->nal_unit_type, h->nal->nal_ref_idc, p + nal_start, nal_end - nal_start, h->nal->sizeof_parsed});
         }
 
         offset += nal_end;
@@ -386,7 +386,7 @@ void H264NALListModel::parse()
 int H264NALListModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return m_nalListIndex.size();
+    return _nalListIndex.size();
 }
 
 int H264NALListModel::columnCount(const QModelIndex &parent) const
@@ -430,8 +430,8 @@ QVariant H264NALListModel::headerData(int section, Qt::Orientation orientation, 
 
 QVariant H264NALListModel::data(const QModelIndex &index, int role) const
 {
-    auto nal = m_nalListIndex[index.row()];
-    auto h = m_bitstream.data();
+    auto nal = _nalListIndex[index.row()];
+    auto h = _bitstream.data();
 
     if(role == Qt::UserRole)
     {

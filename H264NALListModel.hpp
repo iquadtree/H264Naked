@@ -26,14 +26,14 @@ class H264NALListModel : public QAbstractTableModel
         int parsed_size;
     };
 
-    QString m_filename;
-    QByteArray m_fileBuffer;
-    QVector<H264NALIndexEntry> m_nalListIndex;
+    QString _filename;
+    QByteArray _fileBuffer;
+    QVector<H264NALIndexEntry> _nalListIndex;
 
-    mutable QScopedPointer<h264_stream_t, H264Deleter> m_bitstream;
+    mutable QScopedPointer<h264_stream_t, H264Deleter> _bitstream;
 
 public:
-    H264NALListModel(const QString &filename, QObject *parent = NULL);
+    H264NALListModel(const QString &filename, QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent) const;
     int columnCount(const QModelIndex &parent) const;

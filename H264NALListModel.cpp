@@ -341,45 +341,44 @@ static void print_nal(QTextStream &ts, const h264_stream_t* h, const nal_t* nal)
 
 H264NALListModel::H264NALListModel(const QString &filename, QObject *parent)
     :QAbstractTableModel(parent),
-      _filename(filename),
-      _fileBuffer(),
-      _nalListIndex(),
-      _bitstream(h264_new())
+      _bitstream(filename),
+      _parser(h264_new())
 {
-    load();
-    parse();
+    parseBitstream();
 }
 
-void H264NALListModel::load()
+void H264NALListModel::parseBitstream()
 {
-    QFile file(_filename);
-    if (file.open(QFile::ReadOnly))
-    {
-        _fileBuffer = file.readAll();
-        file.close();
-    }
-}
+    ptrdiff_t tail = 0, head = CACHE_SIZE;
 
-void H264NALListModel::parse()
-{
-    int offset = 0;
-    while(offset < _fileBuffer.size())
-    {
-        uint8_t *p = reinterpret_cast<uint8_t *>(_fileBuffer.data() + offset);
+    _bitstream.open(QFile::ReadOnly);
+    _readBuffer.resize(static_cast<size_t>(head - tail));
 
+    while (!_bitstream.atEnd())
+    {
         int nal_start = 0;
         int nal_end = 0;
 
-        h264_stream_t *h = _bitstream.data();
+        _bitstream.peek(static_cast<char *>(static_cast<void *>(_readBuffer.data())), head - tail);
 
-        find_nal_unit(p, _fileBuffer.size(), &nal_start, &nal_end);
-
-        if (nal_end - nal_start > 0) {
-            read_nal_unit(h, p + nal_start, nal_end - nal_start);
-            _nalListIndex.push_back({h->nal->nal_unit_type, h->nal->nal_ref_idc, p + nal_start, nal_end - nal_start, h->nal->sizeof_parsed});
+        if (-1 == find_nal_unit(_readBuffer.data(), static_cast<int>(head - tail), &nal_start, &nal_end))
+        {
+            head += CACHE_SIZE;
+            _readBuffer.resize(static_cast<size_t>(head - tail));
+            continue;
         }
 
-        offset += nal_end;
+        if (nal_end - nal_start > 0) {
+            auto p = _parser.get();
+
+            read_nal_unit(p, _readBuffer.data() + nal_start, nal_end - nal_start);
+            _nalListIndex.push_back({p->nal->nal_unit_type, p->nal->nal_ref_idc, tail + nal_start, static_cast<size_t>(nal_end - nal_start), static_cast<size_t>(p->nal->sizeof_parsed)});
+
+            tail += nal_end;
+            head = tail + CACHE_SIZE;
+
+            _bitstream.seek(tail);
+        }
     }
 }
 
@@ -431,16 +430,22 @@ QVariant H264NALListModel::headerData(int section, Qt::Orientation orientation, 
 QVariant H264NALListModel::data(const QModelIndex &index, int role) const
 {
     auto nal = _nalListIndex[index.row()];
-    auto h = _bitstream.data();
+    auto parser = _parser.data();
 
     if(role == Qt::UserRole)
     {
         QString result;
         QTextStream ts(&result);
 
-        read_nal_unit(h, nal.data, nal.size);
+        if (!_bitstream.seek(nal.offset))
+        {
+            return "N/A";
+        }
 
-        print_nal(ts, h, h->nal);
+        _bitstream.read(static_cast<char *>(static_cast<void *>(_readBuffer.data())), static_cast<int>(nal.size));
+        read_nal_unit(parser, _readBuffer.data(), static_cast<int>(nal.size));
+
+        print_nal(ts, parser, parser->nal);
 
         return result;
     }
@@ -536,7 +541,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
         case Qt::DisplayRole:
         {
-            return nal.ref_idc;
+            return QVariant::fromValue(nal.ref_idc);
         }
         }
     }
@@ -545,7 +550,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
             case Qt::DisplayRole:
             {
-                return nal.size;
+                return QVariant::fromValue(nal.size);
             }
         }
     }
@@ -555,7 +560,7 @@ QVariant H264NALListModel::data(const QModelIndex &index, int role) const
         {
         case Qt::DisplayRole:
         {
-            return nal.parsed_size;
+            return QVariant::fromValue(nal.parsed_size);
         }
         }
     }

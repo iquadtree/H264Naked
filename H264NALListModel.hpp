@@ -5,12 +5,13 @@
 #include <QByteArray>
 #include <h264_stream.h>
 #include <QVector>
-#include <QPair>
-
+#include <QFile>
 
 class H264NALListModel : public QAbstractTableModel
 {
     Q_OBJECT
+
+    using NalReadBuffer = std::vector<uint8_t>;
 
     struct H264Deleter
     {
@@ -21,16 +22,17 @@ class H264NALListModel : public QAbstractTableModel
     {
         int type;
         int ref_idc;
-        uint8_t *data;
-        int size;
-        int parsed_size;
+        ptrdiff_t offset;
+        size_t size;
+        size_t parsed_size;
     };
 
-    QString _filename;
-    QByteArray _fileBuffer;
     QVector<H264NALIndexEntry> _nalListIndex;
 
-    mutable QScopedPointer<h264_stream_t, H264Deleter> _bitstream;
+    mutable QFile _bitstream;
+    mutable NalReadBuffer _readBuffer;
+
+    mutable QScopedPointer<h264_stream_t, H264Deleter> _parser;
 
 public:
     H264NALListModel(const QString &filename, QObject *parent = nullptr);
@@ -41,8 +43,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
 
 private:
-    void load();
-    void parse();
+    void parseBitstream();
 };
 
 #endif // H264NALLISTMODEL_H

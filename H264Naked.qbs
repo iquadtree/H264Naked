@@ -11,7 +11,7 @@ CppApplication {
 
     property int cacheSize: 20480
 
-    cpp.cxxLanguageVersion: "c++17"
+    cpp.cxxLanguageVersion: "c++14"
 
     cpp.includePaths: [project.sourceDirectory + "/deps/h264bitstream"]
     cpp.libraryPaths: [project.sourceDirectory + "/deps/h264bitstream/.libs"]

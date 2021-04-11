@@ -387,7 +387,7 @@ void H264NALListModel::parseBitstream()
 
             entry.type = p->nal->nal_unit_type;
             entry.ref_idc = p->nal->nal_ref_idc;
-            entry.offset = tail + nal_start
+            entry.offset = tail + nal_start;
             entry.size = static_cast<size_t>(nal_end - nal_start);
             entry.parsed_size = static_cast<size_t>(p->nal->sizeof_parsed);
 

@@ -381,7 +381,7 @@ void H264NALListModel::parseBitstream()
         }
 
         if (nal_end - nal_start > 0) {
-            auto p = _parser.get();
+            auto p = _parser.data();
 
             read_nal_unit(p, _readBuffer.data() + nal_start, nal_end - nal_start);
             _nalListIndex.push_back({p->nal->nal_unit_type, p->nal->nal_ref_idc, tail + nal_start, static_cast<size_t>(nal_end - nal_start), static_cast<size_t>(p->nal->sizeof_parsed)});

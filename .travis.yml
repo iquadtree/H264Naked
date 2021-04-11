@@ -11,6 +11,7 @@ script:
   - popd
   - qbs --version
   - qbs setup-toolchains --detect
+  - export QT_SELECT=5
   - qbs setup-qt /usr/bin/qmake qt5
   - qbs config defaultProfile qt5
   - qbs build
